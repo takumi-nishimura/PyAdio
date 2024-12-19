@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "pydantic>=2.10.4",
     "pyserial>=3.5",
 ]
 
@@ -21,4 +22,5 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pgliveapp>=0.1.0",
+    "pytest>=8.3.4",
 ]

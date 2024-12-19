@@ -40,7 +40,7 @@ def main():
     plot_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     SOCK_ADDRESS = ("localhost", 4000)
 
-    ADC_CHANNEL_COUNT = 16
+    ADC_CHANNEL_NUM = 16
 
     CHUNK_SIZE = 127
     CHUNK_NUM = 100
@@ -68,7 +68,7 @@ def main():
         print(f"No response or timeout for command: {command}")
 
     # Set the number of data acquisitions
-    for i in range(ADC_CHANNEL_COUNT):
+    for i in range(ADC_CHANNEL_NUM):
         command = f"*10{i:X}0{format(CHUNK_SIZE, '04X')}#"
         handle.write(command.encode())
         response = handle.readline().decode().strip()
@@ -86,7 +86,7 @@ def main():
         print(f"No response or timeout for command: {command}")
 
     # Set the input voltage range
-    for i in range(ADC_CHANNEL_COUNT):
+    for i in range(ADC_CHANNEL_NUM):
         command = f"*50{i:X}00001#"
         handle.write(command.encode())
         response = handle.readline().decode().strip()
