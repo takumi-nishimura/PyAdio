@@ -237,13 +237,13 @@ class ADC:
         if ch is not None:
             self.settings[ch].recv_chunk_count += 1
 
-            # if (
-            #     self.settings[ch].recv_chunk_count
-            #     >= self.settings[ch].request_count * 0.8
-            # ):
-            #     self.settings[ch].recv_chunk_count = 0
-            #     Thread(target=self.request_buffer_data, args=(ch,)).start()
-            #     logger.debug(f"Request data for channel {ch}.")
+            if (
+                self.settings[ch].recv_chunk_count
+                >= self.settings[ch].request_count * 0.8
+            ):
+                self.settings[ch].recv_chunk_count = 0
+                Thread(target=self.request_buffer_data, args=(ch,)).start()
+                logger.debug(f"Request data for channel {ch}.")
 
             return ch, data
 
