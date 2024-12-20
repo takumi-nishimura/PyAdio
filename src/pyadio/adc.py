@@ -169,6 +169,18 @@ class ADC:
             "10", "5", "1.25", "0.625", "0.3125", "0.15625"
         ] = "5",
     ):
+        """
+        Configures the ADC channel with the specified parameters.
+        Args:
+            channel (int): The ADC channel to configure.
+            conversion_speed (Literal[1, 2, 4, 8, 16, 32, 64, 128, 256]): The speed of the ADC conversion.
+            chunk_size (int, optional): The size of data chunks to process. Defaults to 128.
+            request_count (int, optional): The number of requests to process. Defaults to 100.
+            input_voltage (Literal["10", "5", "1.25", "0.625", "0.3125", "0.15625"], optional): The input voltage range. Defaults to "5".
+        Returns:
+            None
+        """
+
         self._set_conversion_speed(channel, conversion_speed)
         self._set_chunk_size(channel, chunk_size)
         self._set_request_count(channel, request_count)
@@ -196,13 +208,45 @@ class ADC:
             raise Exception("Cannot start memory acquisition.")
 
     def _request_buffer_data(self, ch: int, request_count: int):
+        """
+        Requests buffer data from the ADC for a specific channel.
+        This method sends a command to the ADC to request a specified number of data points
+        from the buffer of a given channel.
+        Args:
+            ch (int): The channel number from which to request data.
+            request_count (int): The number of data points to request from the buffer.
+        """
+
         __command = f"*40{ch:X}1{format(request_count-1, '04X')}#"
         self.handle.write(__command.encode())
 
     def request_buffer_data(self, ch: int):
+        """
+        Request buffer data for a specific channel.
+        This method requests buffer data for the specified channel by calling
+        the internal method `_request_buffer_data` with the channel number and
+        the request count from the settings.
+        Args:
+            ch (int): The channel number for which to request buffer data.
+        """
+
         self._request_buffer_data(ch, self.settings[ch].request_count)
 
     def _convert_data(self, data: str, input_voltage: float) -> List[float]:
+        """
+        Convert hexadecimal string data to a list of floating-point values representing voltages.
+        Args:
+            data (str): A string of hexadecimal values.
+            input_voltage (float): The input voltage reference value.
+        Returns:
+            List[float]: A list of converted floating-point voltage values.
+        Notes:
+            - The input data is expected to be a string where each 5-character segment represents a hexadecimal value.
+            - The maximum ADC value is 524288. If the converted integer value is greater than or equal to this,
+              it is adjusted by subtracting twice the maximum ADC value to handle negative values.
+            - The final voltage values are scaled by the input voltage reference.
+        """
+
         MAX_ADC_VALUE = 524288
         __convert_data = []
         for i in range(0, len(data), 5):
@@ -213,6 +257,14 @@ class ADC:
         return __convert_data
 
     def _parse_data(self, data: bytes) -> Optional[Tuple[int, List[float]]]:
+        """
+        Parses the given byte data and extracts channel information and converted data.
+        Args:
+            data (bytes): The byte data to be parsed.
+        Returns:
+            Optional[Tuple[int, List[float]]]: A tuple containing the channel number and a list of converted data values if parsing is successful, otherwise None.
+        """
+
         line = data.decode().strip()
         if line.startswith("*40"):
             ch = int(line[3], 16)
@@ -224,6 +276,17 @@ class ADC:
         return None
 
     def _get_buffer_data(self) -> Tuple[Optional[int], Optional[List[float]]]:
+        """
+        Retrieves buffer data from the handle and parses it.
+        This method reads a line of data from the handle, parses it, and returns
+        the parsed data if successful. If parsing fails, it logs an error and
+        returns None for both elements of the tuple.
+        Returns:
+            Tuple[Optional[int], Optional[List[float]]]: A tuple containing an
+            integer and a list of floats if parsing is successful, otherwise
+            (None, None).
+        """
+
         __response = self.handle.readline()
         __parsed = self._parse_data(__response)
         if __parsed is not None:
@@ -231,7 +294,19 @@ class ADC:
         logger.error(f"Cannot get buffer data: {__response}")
         return None, None
 
-    def get_buffer_data(self):
+    def get_buffer_data(self) -> Tuple[Optional[int], Optional[List[float]]]:
+        """
+        Retrieves buffer data for a specific channel.
+        This method calls an internal function to get buffer data and updates the
+        receive chunk count for the corresponding channel. If the receive chunk
+        count reaches 80% of the requested count, it resets the count and starts
+        a new thread to request more buffer data for the channel.
+        Returns:
+            Tuple[Optional[int], Optional[List[float]]]: A tuple containing the
+            channel number and the buffer data. If no data is available, returns
+            (None, None).
+        """
+
         ch, data = self._get_buffer_data()
 
         if ch is not None:

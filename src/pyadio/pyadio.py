@@ -11,6 +11,21 @@ logger = logging.getLogger(__name__)
 
 
 class PyAdio:
+    """
+    PyAdio class for interfacing with an Adio device via a serial port.
+
+    Attributes:
+        adio (Adio): Instance of the Adio class.
+        handle (Serial): Serial connection handle to the Adio device.
+        adc (ADC): ADC instance for handling analog-to-digital conversion.
+
+    Methods:
+        __init__(port: Optional[str] = None, **kwargs) -> None:
+            Initializes the PyAdio instance, sets up the serial connection, and initializes ADC.
+        close() -> None:
+            Closes the serial connection and logs the closure.
+    """
+
     def __init__(self, port: Optional[str] = None, **kwargs) -> None:
         logger.info("Setup PyAdio.")
 
