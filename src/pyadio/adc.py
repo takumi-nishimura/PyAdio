@@ -1,31 +1,43 @@
 import logging
-from typing import Dict, List, Literal, Optional, Tuple
+from threading import Thread
+from typing import List, Literal, Optional, Tuple
 
+from pydantic import BaseModel
 from serial import Serial
 
-from pyadio._adio import Adio
+logger = logging.getLogger(__name__)
+
+
+class ADC_CH(BaseModel):
+    channel: int
+    conversion_speed: int
+    chunk_size: int
+    request_count: int
+    input_voltage: float
+
+    recv_chunk_count: int = 0
 
 
 class ADC:
-    def __init__(self, handle: Serial, chunk_num: int = 100) -> None:
-        logging.info("ADC Initialize.")
+    def __init__(self, handle: Serial, adio) -> None:
+        logger.info("ADC Initialize.")
 
-        self.adio = Adio()
         self.handle = handle
 
-        self.chunk_num = chunk_num
+        self.settings = [
+            ADC_CH(
+                channel=ch,
+                conversion_speed=1,
+                chunk_size=1,
+                request_count=100,
+                input_voltage=5.0,
+            )
+            for ch in range(adio.ADC_CH_NUM)
+        ]
 
-        self.settings = {}
-        for ch in range(self.adio.ADC_CH_NUM):
-            self.settings[ch] = {
-                "conversion_speed": 1,
-                "chunk_size": 50,
-                "input_voltage": 5.0,
-            }
-
-    def set_conversion_speed(
+    def _set_conversion_speed(
         self,
-        channels: Literal[0, 1],
+        channel: int,
         speed: Literal[1, 2, 4, 8, 16, 32, 64, 128, 256],
     ):
         """
@@ -41,6 +53,8 @@ class ADC:
             >>> adc.set_conversion_speed(0, 16)
             True
         """
+
+        __channels = channel // len(self.settings)
 
         if speed == 1:
             __data = "0000"
@@ -61,26 +75,26 @@ class ADC:
         elif speed == 256:
             __data = "0008"
 
-        __command = f"*00{channels}0{__data}#"
+        __command = f"*00{__channels}0{__data}#"
         self.handle.write(__command.encode())
 
         __response = self.handle.readline().decode().strip()
         if __response == "*OK#":
-            logging.info(
-                f"Conversion speed successfully set to {speed}ksps for channels {'0~7' if channels == 0 else '8~15'}"
+            logger.info(
+                f"Conversion speed successfully set to {speed}ksps for channels {'0~7' if __channels == 0 else '8~15'}."
             )
-            if channels == 0:
+            if channel == 0:
                 for ch in range(8):
-                    self.settings[ch]["conversion_speed"] = speed
+                    self.settings[ch].conversion_speed = speed
             else:
                 for ch in range(8):
-                    self.settings[ch + 8]["conversion_speed"] = speed
+                    self.settings[ch + 8].conversion_speed = speed
         else:
             raise Exception(
-                f"Cannot set conversion speed for channels {'0~7' if channels == 0 else '8~15'}"
+                f"Cannot set conversion speed for channels {'0~7' if __channels == 0 else '8~15'}"
             )
 
-    def set_chunk_size(self, ch: int, chunk_size: int):
+    def _set_chunk_size(self, channel: int, chunk_size: int):
         """
         Sets the chunk size for a specified channel.
         This method sends a command to set the chunk size for the given channel
@@ -92,19 +106,22 @@ class ADC:
             Exception: If the chunk size cannot be set for the specified channel.
         """
 
-        __command = f"*10{ch:X}0{format(chunk_size, '04X')}#"
+        __command = f"*10{channel:X}0{format(chunk_size, '04X')}#"
         self.handle.write(__command.encode())
 
         __response = self.handle.readline().decode().strip()
         if __response == "*OK#":
-            logging.info(
-                f"Chunk size successfully set to {chunk_size} for channel {ch}."
+            logger.info(
+                f"Chunk size successfully set to {chunk_size} for channel {channel}."
             )
-            self.settings[ch]["chunk_size"] = chunk_size
+            self.settings[channel].chunk_size = chunk_size
         else:
-            raise Exception(f"Cannot set chunk size for channel {ch}.")
+            raise Exception(f"Cannot set chunk size for channel {channel}.")
 
-    def set_input_voltage(
+    def _set_request_count(self, channel: int, request_count: int):
+        self.settings[channel].request_count = request_count
+
+    def _set_input_voltage(
         self,
         channel: int,
         input_voltage: Literal[
@@ -135,12 +152,27 @@ class ADC:
 
         __response = self.handle.readline().decode().strip()
         if __response == "*OK#":
-            logging.info(
+            logger.info(
                 f"Input voltage successfully set to {input_voltage}V for channel {channel}."
             )
-            self.settings[channel]["input_voltage"] = float(input_voltage)
+            self.settings[channel].input_voltage = float(input_voltage)
         else:
             raise Exception(f"Cannot set input voltage for channel {channel}.")
+
+    def set_channel(
+        self,
+        channel: int,
+        conversion_speed: Literal[1, 2, 4, 8, 16, 32, 64, 128, 256],
+        chunk_size: int = 128,
+        request_count: int = 100,
+        input_voltage: Literal[
+            "10", "5", "1.25", "0.625", "0.3125", "0.15625"
+        ] = "5",
+    ):
+        self._set_conversion_speed(channel, conversion_speed)
+        self._set_chunk_size(channel, chunk_size)
+        self._set_request_count(channel, request_count)
+        self._set_input_voltage(channel, input_voltage)
 
     def start_memory_acquisition(self):
         """
@@ -159,7 +191,7 @@ class ADC:
 
         __response = self.handle.readline().decode().strip()
         if __response == "*OK#":
-            logging.info("Memory acquisition started successfully.")
+            logger.info("Memory acquisition started successfully.")
         else:
             raise Exception("Cannot start memory acquisition.")
 
@@ -168,7 +200,7 @@ class ADC:
         self.handle.write(__command.encode())
 
     def request_buffer_data(self, ch: int):
-        self._request_buffer_data(ch, self.chunk_num)
+        self._request_buffer_data(ch, self.settings[ch].request_count)
 
     def _convert_data(self, data: str, input_voltage: float) -> List[float]:
         MAX_ADC_VALUE = 524288
@@ -185,14 +217,34 @@ class ADC:
         if line.startswith("*40"):
             ch = int(line[3], 16)
             converted_data = self._convert_data(
-                line[4:-1], input_voltage=self.settings[ch]["input_voltage"]
+                line[4:-1], input_voltage=self.settings[ch].input_voltage
             )
             return ch, converted_data
-        logging.error("Cannot parsing data.")
+        logger.error("Cannot parsing data.")
+        return None
 
     def _get_buffer_data(self) -> Tuple[Optional[int], Optional[List[float]]]:
         __response = self.handle.readline()
         __parsed = self._parse_data(__response)
         if __parsed is not None:
             return __parsed[0], __parsed[1]
+        logger.error(f"Cannot get buffer data: {__response}")
+        return None, None
+
+    def get_buffer_data(self):
+        ch, data = self._get_buffer_data()
+
+        if ch is not None:
+            self.settings[ch].recv_chunk_count += 1
+
+            # if (
+            #     self.settings[ch].recv_chunk_count
+            #     >= self.settings[ch].request_count * 0.8
+            # ):
+            #     self.settings[ch].recv_chunk_count = 0
+            #     Thread(target=self.request_buffer_data, args=(ch,)).start()
+            #     logger.debug(f"Request data for channel {ch}.")
+
+            return ch, data
+
         return None, None

@@ -1,14 +1,18 @@
 import logging
+import pickle
+import socket
 
-from pyadio import *
+from pyadio import PyAdio
 
 
 def main():
-    logger = logging.getLogger()
-    logger.setLevel("INFO")
+    logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    plot_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     REQUEST_DATA_NUM = 6
-
     pyadio = PyAdio()
 
     buffer_reset = False
@@ -20,25 +24,40 @@ def main():
             logging.info("Clear buffer.")
             buffer_reset = True
 
-    pyadio.adc.set_input_voltage(channel=0, input_voltage="5")
-    pyadio.adc.set_conversion_speed(channels=0, speed=16)
-
     for ch in range(REQUEST_DATA_NUM):
-        pyadio.adc.set_chunk_size(ch, 128)
+        pyadio.adc.set_channel(
+            channel=ch,
+            conversion_speed=1,
+            chunk_size=128,
+            input_voltage="5",
+        )
 
     pyadio.adc.start_memory_acquisition()
-
     for ch in range(REQUEST_DATA_NUM):
         pyadio.adc.request_buffer_data(ch)
 
     try:
         x = 0
         while True:
-            x += 1
+            recv_data_dict = {}
 
-            ch, data = pyadio.adc._get_buffer_data()
-            if data:
-                logging.info(data)
+            for _ in range(REQUEST_DATA_NUM):
+                ch, data = pyadio.adc.get_buffer_data()
+                if ch is not None:
+                    logger.debug(f"Received data for channel {ch}.")
+                    if ch in recv_data_dict:
+                        logger.error(
+                            f"Duplicate data received for channel {ch}."
+                        )
+                        continue
+
+                    recv_data_dict[ch] = data
+
+            x += 1
+            send_data = {"x": x}
+            for ch, data in recv_data_dict.items():
+                send_data[f"y{ch+1}"] = data
+            plot_sock.sendto(pickle.dumps(send_data), ("localhost", 4000))
 
     except Exception as e:
         logger.error(e)

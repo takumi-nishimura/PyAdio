@@ -114,17 +114,19 @@ def main():
                 parsed = parse_data(response)
                 if parsed is not None:
                     ch, data = parsed
+                    print(f"Received data for channel {ch}.")
+
+                    if ch in data_dict:
+                        print(f"Duplicate data received for channel {ch}.")
                     data_dict[ch] = data
+                else:
+                    print(f"Cannot parsing data: {response}")
 
             recv_chunk_count += 1
+            print(f"Received chunk count: {recv_chunk_count}")
             if recv_chunk_count >= CHUNK_NUM * 0.8:
                 recv_chunk_count = 0
                 threading.Thread(target=send_data_request, daemon=True).start()
-
-            if not all(
-                [len(chunk) == CHUNK_SIZE for chunk in data_dict.values()]
-            ):
-                raise Exception("Failed to receive all chunk data.")
 
             x += 1
             send_data = {"x": x}
