@@ -104,15 +104,15 @@ wheels = [
 
 [[package]]
 name = "pgliveapp"
-version = "0.1.2"
+version = "0.1.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pglive" },
     { name = "pyqt6" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/65/80/e34bb8983a93e9e51666a364f76df8f9abd922f9315b96803f54567b966d/pgliveapp-0.1.2.tar.gz", hash = "sha256:54869a35d2049d0c95136cd34e359fc671d134b27cb535cceb3d75c02c5519bd", size = 10645 }
+sdist = { url = "https://files.pythonhosted.org/packages/40/db/a57ee1ee23c43e86e6e54a9464d23cf5c1a114c2d82cd803ffafd41023c0/pgliveapp-0.1.4.tar.gz", hash = "sha256:13e4efb68ef57bc1b0f5a27a55a816e66891ba8bf27f116fcc8b2afa38855bb3", size = 11179 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/77/1c01df5d3a65e1dd6a90e8e08930888441107e4006ca1da18d9094d3b6c9/pgliveapp-0.1.2-py3-none-any.whl", hash = "sha256:df3b5563ecdd07f14f7301296317d7b323c42fdb3a8cdc1e2353528c54c38a60", size = 3237 },
+    { url = "https://files.pythonhosted.org/packages/de/38/7aad0a75716cac1e6f30888e539576ca103f229af59c753d764acb40dd75/pgliveapp-0.1.4-py3-none-any.whl", hash = "sha256:3c35957ccaab1a7f0fad235aa5c769d9a65b53cb17ee81e9dcada8821b54f692", size = 3414 },
 ]
 
 [[package]]
@@ -147,7 +147,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pgliveapp", specifier = ">=0.1.0" },
+    { name = "pgliveapp", specifier = ">=0.1.4" },
     { name = "pytest", specifier = ">=8.3.4" },
 ]
 
@@ -286,6 +286,7 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/0a/c47a1cc272b418faff8af79b121f0cecd32b09d634253254e3a990432220/PyQt6_Qt6-6.8.1-py3-none-macosx_10_14_x86_64.whl", hash = "sha256:1eb8460a1fdb38d0b2458c2974c01d471c1e59e4eb19ea63fc447aaba3ad530e", size = 65754939 },
     { url = "https://files.pythonhosted.org/packages/b1/e6/cc4fbc97a7d0955185e33add3ce00480f0023424d17ac6f864a504f60251/PyQt6_Qt6-6.8.1-py3-none-macosx_11_0_arm64.whl", hash = "sha256:9f3790c4ce4dc576e48b8718d55fb8743057e6cbd53a6ca1dd253ffbac9b7287", size = 59956028 },
+    { url = "https://files.pythonhosted.org/packages/01/22/c2997fe76d765d9ba960e9a099238cb419a316362bdde50fedacc23e7c7d/PyQt6_Qt6-6.8.1-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:d6ca5d2b9d2ec0ee4a814b2175f641a5c4299cb80b45e0f5f8356632663f89b3", size = 72561636 },
     { url = "https://files.pythonhosted.org/packages/a1/24/907c7451901e56e5b713d70c6f65191d80a3a3caac1095fea7f2a4b0b25b/PyQt6_Qt6-6.8.1-py3-none-manylinux_2_35_x86_64.whl", hash = "sha256:08065d595f1e6fc2dde9f4450eeff89082f4bad26f600a8e9b9cc5966716bfcf", size = 72573711 },
     { url = "https://files.pythonhosted.org/packages/2b/a8/d942bb9f83ad4abd4c296cd4bbf752d1147eaa14523cc132a2b8511a3960/PyQt6_Qt6-6.8.1-py3-none-manylinux_2_39_aarch64.whl", hash = "sha256:20843cb86bd94942d1cd99e39bf1aeabb875b241a35a8ab273e4bbbfa63776db", size = 71077917 },
     { url = "https://files.pythonhosted.org/packages/ab/2c/0d45a74ea8eedf5a2a5a2628396fb2e26107ae07f6c73d6d22c7fa3d4403/PyQt6_Qt6-6.8.1-py3-none-win_amd64.whl", hash = "sha256:006d786693d0511fbcf184a862edbd339c6ed1bb3bd9de363d73a19ed4b23dff", size = 71647964 },
