@@ -15,15 +15,6 @@ def main():
     REQUEST_DATA_NUM = 6
     pyadio = PyAdio()
 
-    buffer_reset = False
-    while not buffer_reset:
-        print("...", end="", flush=True)
-        response = pyadio.handle.readline()
-        if response == b"":
-            print("")
-            logging.info("Clear buffer.")
-            buffer_reset = True
-
     for ch in range(REQUEST_DATA_NUM):
         pyadio.adc.set_channel(
             channel=ch,
