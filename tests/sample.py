@@ -51,12 +51,14 @@ def main():
     handle.reset_input_buffer()
     handle.reset_output_buffer()
 
-    buffer_reset = False
-    while not buffer_reset:
-        print("...", end="", flush=True)
-        response = handle.readline()
-        if response == b"":
-            buffer_reset = True
+    # Reset the device
+    command = "*F0000000#"
+    handle.write(command.encode())
+    response = handle.readline().decode().strip()
+    if response:
+        print(f"Response: {response}")
+    else:
+        print(f"No response or timeout for command: {command}")
 
     # Set conversion speed
     command = "*00000000#"
@@ -100,7 +102,8 @@ def main():
         for i in range(REQUEST_DATA_NUM):
             handle.write(f"*40{i:X}1{format(CHUNK_NUM-1, '04X')}#".encode())
 
-    send_data_request()
+    request_thr = threading.Thread(target=send_data_request, daemon=True)
+    request_thr.start()
 
     x = 0
     recv_chunk_count = 0
@@ -119,7 +122,7 @@ def main():
             recv_chunk_count += 1
             if recv_chunk_count >= CHUNK_NUM * 0.8:
                 recv_chunk_count = 0
-                threading.Thread(target=send_data_request, daemon=True).start()
+                request_thr.start()
 
             x += 1
             send_data = {"x": x}
