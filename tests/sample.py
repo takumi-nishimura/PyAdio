@@ -1,7 +1,7 @@
 import os
 import pickle
 import socket
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 from serial import Serial
 from serial.tools.list_ports import comports
@@ -102,7 +102,8 @@ def main():
         for i in range(REQUEST_DATA_NUM):
             handle.write(f"*40{i:X}1{format(CHUNK_NUM-1, '04X')}#".encode())
 
-    threading.Thread(target=send_data_request, daemon=True).start()
+    executor = ThreadPoolExecutor(max_workers=2)
+    executor.submit(send_data_request)
 
     x = 0
     recv_chunk_count = 0
@@ -121,7 +122,7 @@ def main():
             recv_chunk_count += 1
             if recv_chunk_count >= CHUNK_NUM * 0.8:
                 recv_chunk_count = 0
-                threading.Thread(target=send_data_request, daemon=True).start()
+                executor.submit(send_data_request)
 
             x += 1
             send_data = {"x": x}
