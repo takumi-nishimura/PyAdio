@@ -102,8 +102,7 @@ def main():
         for i in range(REQUEST_DATA_NUM):
             handle.write(f"*40{i:X}1{format(CHUNK_NUM-1, '04X')}#".encode())
 
-    request_thr = threading.Thread(target=send_data_request, daemon=True)
-    request_thr.start()
+    threading.Thread(target=send_data_request, daemon=True).start()
 
     x = 0
     recv_chunk_count = 0
@@ -122,7 +121,7 @@ def main():
             recv_chunk_count += 1
             if recv_chunk_count >= CHUNK_NUM * 0.8:
                 recv_chunk_count = 0
-                request_thr.start()
+                threading.Thread(target=send_data_request, daemon=True).start()
 
             x += 1
             send_data = {"x": x}
