@@ -1,6 +1,7 @@
 import os
 import pickle
 import socket
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from serial import Serial
@@ -52,13 +53,12 @@ def main():
     handle.reset_output_buffer()
 
     # Reset the device
-    command = "*F0000000#"
-    handle.write(command.encode())
-    response = handle.readline().decode().strip()
-    if response:
-        print(f"Response: {response}")
-    else:
-        print(f"No response or timeout for command: {command}")
+    buffer_reset = False
+    while not buffer_reset:
+        print("...", end="", flush=True)
+        response = handle.readline()
+        if response == b"":
+            buffer_reset = True
 
     # Set conversion speed
     command = "*00000000#"
