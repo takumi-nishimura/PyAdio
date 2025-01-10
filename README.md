@@ -18,3 +18,12 @@ python tests/pyadio_adc.py
 > ```bash
 > pgliveapp --num 6 --col 2
 > ```
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first
+to discuss what you would like to change.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
