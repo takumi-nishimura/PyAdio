@@ -34,7 +34,7 @@ class PyAdio:
 
         self.adio = Adio()
         self.handle = Serial(port, timeout=kwargs.get("timeout", 1))
-        self.reset_device()
+        # self.reset_device()
         self.adc = ADC(self.handle, self.adio)
 
     def reset_device(self):
