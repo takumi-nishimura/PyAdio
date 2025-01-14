@@ -1,5 +1,5 @@
 import logging
-from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Literal, Optional, Tuple
 
 from pydantic import BaseModel
@@ -23,6 +23,7 @@ class ADC:
         logger.info("ADC Initialize.")
 
         self.handle = handle
+        self.request_buffer_executor = ThreadPoolExecutor(max_workers=6)
 
         self.settings = [
             ADC_CH(
@@ -232,6 +233,20 @@ class ADC:
 
         self._request_buffer_data(ch, self.settings[ch].request_count)
 
+    def request_buffer_data_thr(self, ch: int):
+        """
+        Requests buffer data for a specific channel in a separate thread.
+        Args:
+            ch (int): The channel number for which to request buffer data.
+        This method submits a task to the request_buffer_executor to call the
+        _request_buffer_data method with the specified channel and its corresponding
+        request count from the settings.
+        """
+
+        self.request_buffer_executor.submit(
+            self._request_buffer_data, ch, self.settings[ch].request_count
+        )
+
     def _convert_data(self, data: str, input_voltage: float) -> List[float]:
         """
         Convert hexadecimal string data to a list of floating-point values representing voltages.
@@ -317,7 +332,7 @@ class ADC:
                 >= self.settings[ch].request_count * 0.8
             ):
                 self.settings[ch].recv_chunk_count = 0
-                Thread(target=self.request_buffer_data, args=(ch,)).start()
+                self.request_buffer_data_thr(ch)
                 logger.debug(f"Request data for channel {ch}.")
 
             return ch, data

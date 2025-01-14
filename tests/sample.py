@@ -1,7 +1,6 @@
 import os
 import pickle
 import socket
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 from serial import Serial
