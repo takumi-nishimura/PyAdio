@@ -51,13 +51,23 @@ def main():
     handle.reset_input_buffer()
     handle.reset_output_buffer()
 
-    # Reset the device
+    # Reset the buffer
     buffer_reset = False
     while not buffer_reset:
         print("...", end="", flush=True)
         response = handle.readline()
         if response == b"":
             buffer_reset = True
+            print("Buffer reset.")
+
+    # Reset the device
+    command = "*F0000000#"
+    handle.write(command.encode())
+    response = handle.readline().decode().strip()
+    if response:
+        print(f"Response: {response}")
+    else:
+        print(f"No response or timeout for command: {command}")
 
     # Set conversion speed
     command = "*00000000#"
