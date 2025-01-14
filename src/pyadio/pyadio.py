@@ -40,7 +40,7 @@ class PyAdio:
     def __reset_device(self):
         self.handle.write("*F0000000#".encode())
         __response = self.handle.readline().decode().strip()
-        if __response == "OK":
+        if __response == "*OK#":
             logger.info("Completed device reset.")
         else:
             raise Exception(f"Failed to reset device. Response: {__response}")
@@ -52,6 +52,7 @@ class PyAdio:
             response = self.handle.readline()
             if response == b"":
                 buffer_reset = True
+        self.__reset_device()
 
     def close(self):
         self.handle.close()

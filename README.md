@@ -6,6 +6,11 @@ PyAdio is a Python library for ADio.
 
 ```bash
 pip install git+https://github.com/takumi-nishimura/PyAdio.git
+```  
+
+or  
+```bash
+pip install pyadio
 ```
 
 ## Usage
@@ -26,7 +31,7 @@ to discuss what you would like to change.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENCE.txt) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/takumi-nishimura/PyAdio/blob/dev/LICENCE.txt) file for details.
 
 * **pydantic** is licensed under the MIT License. [LICENCE](https://github.com/pydantic/pydantic/blob/main/LICENSE)
 * **pyserial** is licensed under the BSD 3-Clause License. [LICENCE](https://github.com/pyserial/pyserial/blob/master/LICENSE.txt)

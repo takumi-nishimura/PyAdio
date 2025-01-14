@@ -20,4 +20,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
+    project_urls={"source": "https://github.com/takumi-nishimura/PyAdio.git"},
 )
