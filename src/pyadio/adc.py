@@ -55,7 +55,7 @@ class ADC:
             True
         """
 
-        __channels = channel // len(self.settings)
+        __channels = channel // 8
 
         if speed == 1:
             __data = "0000"
