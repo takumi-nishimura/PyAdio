@@ -38,7 +38,7 @@ class PyAdio:
         self.adc = ADC(self.handle, self.adio)
 
     def __reset_device(self):
-        self.handle.write("*F0000000#".encode())
+        self.handle.write("*f0000000#".encode())
         __response = self.handle.readline().decode().strip()
         if __response == "*OK#":
             logger.info("Completed device reset.")
