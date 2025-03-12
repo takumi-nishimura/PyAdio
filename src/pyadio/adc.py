@@ -329,7 +329,7 @@ class ADC:
 
             if (
                 self.settings[ch].recv_chunk_count
-                >= self.settings[ch].request_count * 0.8
+                >= self.settings[ch].request_count * 0.5
             ):
                 self.settings[ch].recv_chunk_count = 0
                 self.request_buffer_data_thr(ch)
