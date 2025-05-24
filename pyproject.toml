@@ -1,7 +1,7 @@
 [project]
 name = "pyadio"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0" # Version updated
+description = "Python library for ADio with asynchronous I/O support." # Updated description
 readme = "README.md"
 authors = [
     { name = "takumi-nishimura", email = "clp13218@nitech.jp" }
@@ -15,6 +15,7 @@ classifiers = [
 dependencies = [
     "pydantic>=2.10.4",
     "pyserial>=3.5",
+    "pyserial-asyncio>=0.6", # Added pyserial-asyncio
 ]
 
 [project.scripts]
