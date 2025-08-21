@@ -6,7 +6,7 @@ from pyadio import PyAdio
 def main():
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     REQUEST_DATA_NUM = 6
     pyadio = PyAdio()
@@ -15,7 +15,7 @@ def main():
         pyadio.adc.set_channel(
             channel=ch,
             conversion_speed=1,
-            chunk_size=128,
+            chunk_size=2047,
             input_voltage="5",
         )
 

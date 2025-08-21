@@ -51,23 +51,14 @@ def main():
     handle.reset_input_buffer()
     handle.reset_output_buffer()
 
-    # Reset the buffer
-    buffer_reset = False
-    while not buffer_reset:
-        print("...", end="", flush=True)
-        response = handle.readline()
-        if response == b"":
-            buffer_reset = True
-            print("Buffer reset.")
-
     # Reset the device
+    buffer_reset = False
     command = "*F0000000#"
     handle.write(command.encode())
-    response = handle.readline().decode().strip()
-    if response:
-        print(f"Response: {response}")
-    else:
-        print(f"No response or timeout for command: {command}")
+    while not buffer_reset:
+        response = handle.readline()
+        if response == b"*OK#\r\n":
+            buffer_reset = True
 
     # Set conversion speed
     command = "*00000000#"
@@ -109,7 +100,7 @@ def main():
     # Request data transmission
     def send_data_request():
         for i in range(REQUEST_DATA_NUM):
-            handle.write(f"*40{i:X}1{format(CHUNK_NUM-1, '04X')}#".encode())
+            handle.write(f"*40{i:X}1{format(CHUNK_NUM - 1, '04X')}#".encode())
 
     executor = ThreadPoolExecutor(max_workers=2)
     executor.submit(send_data_request)
@@ -136,7 +127,8 @@ def main():
             x += 1
             send_data = {"x": x}
             for ch, data in data_dict.items():
-                send_data[f"y{ch+1}"] = data
+                send_data[f"y{ch + 1}"] = data
+            print(send_data)
             plot_socket.sendto(pickle.dumps(send_data), SOCK_ADDRESS)
 
         except KeyboardInterrupt:

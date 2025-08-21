@@ -107,7 +107,7 @@ class ADC:
             Exception: If the chunk size cannot be set for the specified channel.
         """
 
-        __command = f"*10{channel:X}0{format(chunk_size, '04X')}#"
+        __command = f"*10{channel:X}0{format(chunk_size, '04x')}#"
         self.handle.write(__command.encode())
 
         __response = self.handle.readline().decode().strip()
@@ -218,7 +218,7 @@ class ADC:
             request_count (int): The number of data points to request from the buffer.
         """
 
-        __command = f"*40{ch:X}1{format(request_count-1, '04X')}#"
+        __command = f"*40{ch:X}1{format(request_count-1, '04x')}#"
         self.handle.write(__command.encode())
 
     def request_buffer_data(self, ch: int):
@@ -302,7 +302,7 @@ class ADC:
             (None, None).
         """
 
-        __response = self.handle.readline()
+        __response = self.handle.read(self.handle.in_waiting)
         __parsed = self._parse_data(__response)
         if __parsed is not None:
             return __parsed[0], __parsed[1]
@@ -327,13 +327,13 @@ class ADC:
         if ch is not None:
             self.settings[ch].recv_chunk_count += 1
 
-            if (
-                self.settings[ch].recv_chunk_count
-                >= self.settings[ch].request_count * 0.5
-            ):
-                self.settings[ch].recv_chunk_count = 0
-                self.request_buffer_data_thr(ch)
-                logger.debug(f"Request data for channel {ch}.")
+            # if (
+            #     self.settings[ch].recv_chunk_count
+            #     >= self.settings[ch].request_count * 0.5
+            # ):
+            #     self.settings[ch].recv_chunk_count = 0
+            #     self.request_buffer_data_thr(ch)
+            #     logger.debug(f"Request data for channel {ch}.")
 
             return ch, data
 

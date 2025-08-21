@@ -34,10 +34,19 @@ class PyAdio:
 
         self.adio = Adio()
         self.handle = Serial(port, timeout=kwargs.get("timeout", 1))
+        self.handle.reset_input_buffer()
+        self.handle.reset_output_buffer()
         self.reset_device()
         self.adc = ADC(self.handle, self.adio)
 
     def __reset_device(self):
+        self.handle.write("*40030000#".encode())
+        __response = self.handle.readline().decode().strip()
+        if __response == "*OK#":
+            logger.info("Completed device reset.")
+        else:
+            raise Exception(f"Failed to reset device. Response: {__response}")
+
         self.handle.write("*f0000000#".encode())
         __response = self.handle.readline().decode().strip()
         if __response == "*OK#":
@@ -50,10 +59,13 @@ class PyAdio:
         while not buffer_reset:
             print("...", end="", flush=True)
             response = self.handle.readline()
+            print(response)
             if response == b"":
                 buffer_reset = True
         self.__reset_device()
 
     def close(self):
+        self.handle.reset_input_buffer()
+        self.handle.reset_output_buffer()
         self.handle.close()
         logger.info("Closed PyAdio.")
